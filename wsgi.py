@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import openai
 import os
 from dotenv import load_dotenv
@@ -18,6 +19,7 @@ client = openai.OpenAI(api_key=api_key)
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -26,15 +28,31 @@ def chat():
         data = request.json
         user_message = data.get("message", "").strip()
 
-        # **Limit User Input Size**
+        # Limit User Input Size
         if len(user_message) > 500:
             return jsonify({"reply": "Error: Your message is too long. Please keep it under 500 characters."}), 400
 
         # Call OpenAI API with GPT-4o
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=[{"role": "user", "content": user_message}],
-            max_tokens=50
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are the virtual assistant for Will's Waste, LLC — a local, family-owned waste collection company "
+                        "serving Coal Mountain, Silver City, and Matt in Forsyth County, Georgia. "
+                        "Your job is to answer customer questions clearly and helpfully about trash pickup options, pricing, "
+                        "and how to sign up. "
+                        "Pricing: $30/month for curbside, $40/month for backdoor, $10 per extra container, bulk pickup available by request. "
+                        "If asked something outside your scope, politely direct them to call 770-762-WILL (9455) or visit https://willswaste.com."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": user_message
+                }
+            ],
+            max_tokens=100
         )
 
         # Extract chatbot reply
@@ -43,9 +61,8 @@ def chat():
         return jsonify({"reply": chatbot_reply})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  # Return error message for debugging
+        return jsonify({"error": str(e)}), 500
 
-# Render requires Flask to listen on port 10000
 def main():
     app.run(host="0.0.0.0", port=10000)
 

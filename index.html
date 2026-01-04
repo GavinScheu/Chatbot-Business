@@ -321,6 +321,19 @@
             background: #b8941f;
         }
 
+        #word-counter {
+            text-align: right;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            color: #888;
+            background: #1a1a1a;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        #word-counter.warning {
+            color: #ff6464;
+        }
+
         /* Business Section */
         .business-section {
             min-height: 100vh;
@@ -645,6 +658,7 @@
                     <strong>Mario's Bot:</strong> Welcome to Mario's! I can help answer questions about our menu, hours, location, and more. What would you like to know?
                 </div>
             </div>
+            <div id="word-counter">0/25 words</div>
             <form id="chat-form">
                 <input id="chat-input" type="text" placeholder="Type your question..." autocomplete="off">
                 <button type="submit">Send</button>
@@ -726,7 +740,33 @@
 
         // Rate limiting: 5 messages per visitor
         const MAX_MESSAGES = 5;
+        const MAX_WORDS = 25;
+        const MAX_CHARACTERS = 200; // ~25 words worth of characters
         let messageCount = parseInt(localStorage.getItem('chatMessageCount') || '0');
+
+        const wordCounter = document.getElementById('word-counter');
+
+        // Update word counter as user types
+        chatInput.addEventListener('input', () => {
+            const text = chatInput.value.trim();
+            const wordCount = text ? text.split(/\s+/).length : 0;
+            const charCount = text.length;
+            
+            // Update counter display
+            wordCounter.textContent = `${wordCount}/25 words`;
+            
+            // Warn when approaching limit
+            if (wordCount > 20 || charCount > 180) {
+                wordCounter.classList.add('warning');
+            } else {
+                wordCounter.classList.remove('warning');
+            }
+            
+            // Enforce character limit (prevents spam like "iiiiii...")
+            if (charCount > MAX_CHARACTERS) {
+                chatInput.value = text.substring(0, MAX_CHARACTERS);
+            }
+        });
 
         // Function to minimize chat
         function minimizeChat() {
@@ -760,6 +800,19 @@
             const message = chatInput.value.trim();
             if (!message) return;
 
+            // Check word count
+            const wordCount = message.split(/\s+/).length;
+            if (wordCount > MAX_WORDS) {
+                addMessage('System', `Please limit your question to ${MAX_WORDS} words or less.`, 'rate-limit-warning');
+                return;
+            }
+
+            // Check character count (prevents spam)
+            if (message.length > MAX_CHARACTERS) {
+                addMessage('System', 'Your message is too long. Please shorten it.', 'rate-limit-warning');
+                return;
+            }
+
             // Check rate limit
             if (messageCount >= MAX_MESSAGES) {
                 addMessage('System', 'You\'ve reached the demo limit of 5 messages. Contact us to get your own unlimited chatbot!', 'rate-limit-warning');
@@ -769,6 +822,8 @@
 
             addMessage('You', message, 'user-message');
             chatInput.value = '';
+            wordCounter.textContent = '0/25 words';
+            wordCounter.classList.remove('warning');
             messageCount++;
             localStorage.setItem('chatMessageCount', messageCount.toString());
 

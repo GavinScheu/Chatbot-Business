@@ -1,0 +1,29 @@
+<div id="chat-widget" class="minimized">
+  <div class="chat-bubble" onclick="document.getElementById('chat-widget').classList.remove('minimized'); document.getElementById('chat-widget').classList.add('expanded');">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+    </svg>
+  </div>
+  <div class="chat-container">
+    <div class="chat-header">💬 Chat with us!</div>
+    <div id="chat-log"></div>
+    <form id="chat-form">
+      <input id="chat-input" type="text" placeholder="Ask us anything...">
+      <button type="submit">Send</button>
+    </form>
+  </div>
+</div>
+
+<script>
+const businessId = "CLIENT-BUSINESS-ID-HERE";  // <-- CHANGE THIS
+
+// ... rest of chat script with business_id in fetch call:
+fetch("https://chatbot-business-1.onrender.com/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ 
+    message: message,
+    business_id: businessId  // <-- This tells the system which business
+  })
+});
+</script>

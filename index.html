@@ -209,6 +209,29 @@
             font-family: 'Playfair Display', serif;
             font-size: 1.1rem;
             text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-chat {
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1a1a1a;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .close-chat:hover {
+            transform: scale(1.2);
         }
 
         #chat-log {
@@ -613,7 +636,10 @@
             </svg>
         </div>
         <div class="chat-container">
-            <div class="chat-header">💬 Ask us anything!</div>
+            <div class="chat-header">
+                <span>Chat with us</span>
+                <button class="close-chat" onclick="minimizeChat()">×</button>
+            </div>
             <div id="chat-log">
                 <div class="message bot-message">
                     <strong>Mario's Bot:</strong> Welcome to Mario's! I can help answer questions about our menu, hours, location, and more. What would you like to know?
@@ -701,6 +727,20 @@
         // Rate limiting: 5 messages per visitor
         const MAX_MESSAGES = 5;
         let messageCount = parseInt(localStorage.getItem('chatMessageCount') || '0');
+
+        // Function to minimize chat
+        function minimizeChat() {
+            chatWidget.classList.remove('expanded');
+            chatWidget.classList.add('minimized');
+        }
+
+        // Click outside to close
+        document.addEventListener('click', (e) => {
+            if (chatWidget.classList.contains('expanded') && 
+                !chatWidget.contains(e.target)) {
+                minimizeChat();
+            }
+        });
 
         // Hide chatbot when scrolling to business section
         window.addEventListener('scroll', () => {

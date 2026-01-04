@@ -28,14 +28,34 @@ BUSINESSES = {}
 
 def load_business_configs():
     """Load all business configs from the businesses/ directory"""
-    businesses_dir = os.path.join(os.path.dirname(__file__), 'businesses')
+    # Try multiple possible paths
+    possible_paths = [
+        os.path.join(os.path.dirname(__file__), 'businesses'),
+        os.path.join(os.getcwd(), 'businesses'),
+        'businesses'
+    ]
     
-    if not os.path.exists(businesses_dir):
-        print("Warning: businesses/ directory not found")
+    businesses_dir = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            businesses_dir = path
+            break
+    
+    if not businesses_dir:
+        print("ERROR: businesses/ directory not found in any expected location")
+        print(f"Tried: {possible_paths}")
+        print(f"Current dir: {os.getcwd()}")
+        print(f"Files in current dir: {os.listdir('.')}")
         return
     
+    print(f"Loading businesses from: {businesses_dir}")
+    
     for business_folder in os.listdir(businesses_dir):
-        config_path = os.path.join(businesses_dir, business_folder, 'config.json')
+        folder_path = os.path.join(businesses_dir, business_folder)
+        if not os.path.isdir(folder_path):
+            continue
+            
+        config_path = os.path.join(folder_path, 'config.json')
         
         if os.path.exists(config_path):
             try:
@@ -43,9 +63,9 @@ def load_business_configs():
                     config = json.load(f)
                     business_id = config.get('business_id')
                     BUSINESSES[business_id] = config
-                    print(f"Loaded config for: {config.get('business_name')}")
+                    print(f"✓ Loaded config for: {config.get('business_name')} (ID: {business_id})")
             except Exception as e:
-                print(f"Error loading config for {business_folder}: {e}")
+                print(f"✗ Error loading config for {business_folder}: {e}")
 
 # Load configs on startup
 load_business_configs()

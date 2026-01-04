@@ -3,6 +3,7 @@ from flask_cors import CORS
 from contact_handler import send_contact_email
 import openai
 import os
+import json
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -22,48 +23,79 @@ client = openai.OpenAI(api_key=api_key)
 app = Flask(__name__)
 CORS(app)
 
+# Load all business configurations
+BUSINESSES = {}
+
+def load_business_configs():
+    """Load all business configs from the businesses/ directory"""
+    businesses_dir = os.path.join(os.path.dirname(__file__), 'businesses')
+    
+    if not os.path.exists(businesses_dir):
+        print("Warning: businesses/ directory not found")
+        return
+    
+    for business_folder in os.listdir(businesses_dir):
+        config_path = os.path.join(businesses_dir, business_folder, 'config.json')
+        
+        if os.path.exists(config_path):
+            try:
+                with open(config_path, 'r') as f:
+                    config = json.load(f)
+                    business_id = config.get('business_id')
+                    BUSINESSES[business_id] = config
+                    print(f"Loaded config for: {config.get('business_name')}")
+            except Exception as e:
+                print(f"Error loading config for {business_folder}: {e}")
+
+# Load configs on startup
+load_business_configs()
+
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
-        # Get the user message from the request
+        # Get the user message and business ID from the request
         data = request.json
         user_message = data.get("message", "").strip()
-
+        business_id = data.get("business_id", "marios-italian")  # Default to Mario's for demo
+        
         # Limit User Input Size
         if len(user_message) > 500:
             return jsonify({"reply": "Error: Your message is too long. Please keep it under 500 characters."}), 400
-
-        # Call OpenAI API with GPT-4o
+        
+        # Get business config
+        business_config = BUSINESSES.get(business_id)
+        
+        if not business_config:
+            return jsonify({"error": f"Business '{business_id}' not found"}), 404
+        
+        # Get system prompt and settings from config
+        system_prompt = business_config.get("system_prompt")
+        max_tokens = business_config.get("max_tokens", 100)
+        
+        # Call OpenAI API
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {
                     "role": "system",
-                    "content": (
-                        "You are the virtual assistant for Will's Waste, LLC — a local, family-owned waste collection company "
-                        "serving Coal Mountain, Silver City, and Matt in Forsyth County, Georgia. "
-                        "Your job is to answer customer questions clearly and helpfully about trash pickup options, pricing, "
-                        "and how to sign up. "
-                        "Pricing: $30/month for curbside, $40/month for backdoor, $10 per extra container, bulk pickup available by request. "
-                        "If asked something outside your scope, politely direct them to call 770-762-WILL (9455) or visit https://willswaste.com."
-                    )
+                    "content": system_prompt
                 },
                 {
                     "role": "user",
                     "content": user_message
                 }
             ],
-            max_tokens=100
+            max_tokens=max_tokens
         )
-
+        
         # Extract chatbot reply
         chatbot_reply = response.choices[0].message.content.strip()
-
+        
         return jsonify({"reply": chatbot_reply})
-
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
 @app.route("/contact", methods=["POST"])
 def contact():
     try:
@@ -92,6 +124,7 @@ def contact():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Render requires Flask to listen on port 10000
 def main():
     app.run(host="0.0.0.0", port=10000)
 

@@ -1,29 +1,340 @@
-<div id="chat-widget" class="minimized">
-  <div class="chat-bubble" onclick="document.getElementById('chat-widget').classList.remove('minimized'); document.getElementById('chat-widget').classList.add('expanded');">
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
-    </svg>
-  </div>
-  <div class="chat-container">
-    <div class="chat-header">💬 Chat with us!</div>
-    <div id="chat-log"></div>
-    <form id="chat-form">
-      <input id="chat-input" type="text" placeholder="Ask us anything...">
-      <button type="submit">Send</button>
-    </form>
-  </div>
+<!-- 
+BizChatAssist Client Embed Code
+================================
+Instructions:
+1. Replace "CLIENT-BUSINESS-ID" with the client's actual business_id (e.g., "joes-pizza")
+2. Paste this entire code snippet just before the closing </body> tag on their website
+3. That's it! The chatbot will appear in the top right corner.
+
+Need help? Contact us at gavinscheu@gmail.com
+-->
+
+<style>
+/* BizChatAssist Chatbot Styles */
+#bizchat-widget {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    transition: all 0.3s ease;
+    font-family: 'Lato', Arial, sans-serif;
+}
+
+#bizchat-widget.minimized {
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+}
+
+#bizchat-widget.expanded {
+    width: 320px;
+}
+
+.bizchat-bubble {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+    transition: transform 0.2s ease;
+}
+
+.bizchat-bubble:hover {
+    transform: scale(1.1);
+}
+
+.bizchat-bubble svg {
+    width: 30px;
+    height: 30px;
+    fill: #1a1a1a;
+}
+
+#bizchat-widget.minimized .bizchat-container {
+    display: none;
+}
+
+#bizchat-widget.expanded .bizchat-bubble {
+    display: none;
+}
+
+.bizchat-container {
+    background: rgba(26, 26, 26, 0.95);
+    border: 1px solid #d4af37;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.bizchat-header {
+    padding: 15px;
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+    color: #1a1a1a;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bizchat-close {
+    cursor: pointer;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1a1a1a;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.bizchat-close:hover {
+    transform: scale(1.2);
+}
+
+.bizchat-log {
+    height: 250px;
+    overflow-y: auto;
+    padding: 15px;
+    background: #1a1a1a;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.bizchat-log::-webkit-scrollbar {
+    width: 8px;
+}
+
+.bizchat-log::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+.bizchat-log::-webkit-scrollbar-thumb {
+    background: #d4af37;
+    border-radius: 4px;
+}
+
+.bizchat-message {
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    animation: bizchatSlideIn 0.3s ease;
+}
+
+@keyframes bizchatSlideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.bizchat-user-message {
+    background: rgba(212, 175, 55, 0.2);
+    border-left: 3px solid #d4af37;
+}
+
+.bizchat-bot-message {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid #666;
+}
+
+.bizchat-message strong {
+    color: #d4af37;
+}
+
+.bizchat-warning {
+    background: rgba(255, 100, 100, 0.2);
+    border-left: 3px solid #ff6464;
+    color: #ff6464;
+}
+
+.bizchat-counter {
+    text-align: right;
+    padding: 5px 10px;
+    font-size: 0.75rem;
+    color: #888;
+    background: #1a1a1a;
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.bizchat-counter.warning {
+    color: #ff6464;
+}
+
+.bizchat-form {
+    display: flex;
+    border-top: 1px solid #d4af37;
+}
+
+.bizchat-input {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: #2d2d2d;
+    color: white;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.bizchat-input::placeholder {
+    color: #888;
+}
+
+.bizchat-submit {
+    padding: 12px 20px;
+    background: #d4af37;
+    color: #1a1a1a;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.bizchat-submit:hover {
+    background: #b8941f;
+}
+
+@media (max-width: 768px) {
+    #bizchat-widget {
+        width: 90%;
+        right: 5%;
+    }
+}
+</style>
+
+<div id="bizchat-widget" class="minimized">
+    <div class="bizchat-bubble" onclick="expandBizChat()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+        </svg>
+    </div>
+    <div class="bizchat-container">
+        <div class="bizchat-header">
+            <span>Chat with us</span>
+            <button class="bizchat-close" onclick="minimizeBizChat()">×</button>
+        </div>
+        <div class="bizchat-log" id="bizchat-log">
+            <div class="bizchat-message bizchat-bot-message">
+                <strong>Bot:</strong> Hi! I can help answer your questions. What would you like to know?
+            </div>
+        </div>
+        <div class="bizchat-counter" id="bizchat-counter">0/25 words</div>
+        <form class="bizchat-form" id="bizchat-form">
+            <input class="bizchat-input" id="bizchat-input" type="text" placeholder="Ask us anything..." autocomplete="off">
+            <button class="bizchat-submit" type="submit">Send</button>
+        </form>
+    </div>
 </div>
 
 <script>
-const businessId = "CLIENT-BUSINESS-ID-HERE";  // <-- CHANGE THIS
-
-// ... rest of chat script with business_id in fetch call:
-fetch("https://chatbot-business-1.onrender.com/chat", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ 
-    message: message,
-    business_id: businessId  // <-- This tells the system which business
-  })
-});
+(function() {
+    // ===== CONFIGURATION =====
+    const BUSINESS_ID = "CLIENT-BUSINESS-ID"; // ⚠️ REPLACE THIS WITH CLIENT'S ACTUAL BUSINESS ID
+    const API_URL = "https://chatbot-business-1.onrender.com/chat";
+    const MAX_WORDS = 25;
+    const MAX_CHARACTERS = 200;
+    
+    // ===== DOM ELEMENTS =====
+    const widget = document.getElementById('bizchat-widget');
+    const chatLog = document.getElementById('bizchat-log');
+    const chatForm = document.getElementById('bizchat-form');
+    const chatInput = document.getElementById('bizchat-input');
+    const wordCounter = document.getElementById('bizchat-counter');
+    
+    // ===== FUNCTIONS =====
+    window.expandBizChat = function() {
+        widget.classList.remove('minimized');
+        widget.classList.add('expanded');
+    };
+    
+    window.minimizeBizChat = function() {
+        widget.classList.remove('expanded');
+        widget.classList.add('minimized');
+    };
+    
+    // Click outside to close
+    document.addEventListener('click', (e) => {
+        if (widget.classList.contains('expanded') && !widget.contains(e.target)) {
+            minimizeBizChat();
+        }
+    });
+    
+    function addMessage(sender, text, className) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `bizchat-message ${className}`;
+        messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        chatLog.appendChild(messageDiv);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+    
+    // Update word counter as user types
+    chatInput.addEventListener('input', () => {
+        const text = chatInput.value.trim();
+        const wordCount = text ? text.split(/\s+/).length : 0;
+        const charCount = text.length;
+        
+        wordCounter.textContent = `${wordCount}/25 words`;
+        
+        if (wordCount > 20 || charCount > 180) {
+            wordCounter.classList.add('warning');
+        } else {
+            wordCounter.classList.remove('warning');
+        }
+        
+        // Enforce character limit
+        if (charCount > MAX_CHARACTERS) {
+            chatInput.value = text.substring(0, MAX_CHARACTERS);
+        }
+    });
+    
+    // Handle form submission
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = chatInput.value.trim();
+        if (!message) return;
+        
+        // Validate word count
+        const wordCount = message.split(/\s+/).length;
+        if (wordCount > MAX_WORDS) {
+            addMessage('System', `Please limit your question to ${MAX_WORDS} words or less.`, 'bizchat-warning');
+            return;
+        }
+        
+        // Validate character count
+        if (message.length > MAX_CHARACTERS) {
+            addMessage('System', 'Your message is too long. Please shorten it.', 'bizchat-warning');
+            return;
+        }
+        
+        // Display user message
+        addMessage('You', message, 'bizchat-user-message');
+        chatInput.value = '';
+        wordCounter.textContent = '0/25 words';
+        wordCounter.classList.remove('warning');
+        
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    message: message,
+                    business_id: BUSINESS_ID
+                })
+            });
+            
+            const data = await response.json();
+            addMessage('Bot', data.reply || data.error || 'Sorry, I couldn\'t process that.', 'bizchat-bot-message');
+            
+        } catch (error) {
+            addMessage('System', 'Connection error. Please try again.', 'bizchat-warning');
+        }
+    });
+})();
 </script>

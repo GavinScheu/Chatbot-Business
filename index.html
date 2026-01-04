@@ -142,15 +142,55 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 320px;
             z-index: 9999;
-            transition: opacity 0.5s ease, transform 0.5s ease;
+            transition: all 0.3s ease;
+        }
+
+        #chat-widget.minimized {
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+        }
+
+        #chat-widget.expanded {
+            width: 320px;
         }
 
         #chat-widget.hidden {
             opacity: 0;
             transform: translateY(20px);
             pointer-events: none;
+        }
+
+        .chat-bubble {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            transition: transform 0.2s ease;
+        }
+
+        .chat-bubble:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-bubble svg {
+            width: 30px;
+            height: 30px;
+            fill: #1a1a1a;
+        }
+
+        #chat-widget.minimized .chat-container {
+            display: none;
+        }
+
+        #chat-widget.expanded .chat-bubble {
+            display: none;
         }
 
         .chat-container {
@@ -343,6 +383,7 @@
         .feature-card:nth-child(1) { animation-delay: 0.3s; }
         .feature-card:nth-child(2) { animation-delay: 0.4s; }
         .feature-card:nth-child(3) { animation-delay: 0.5s; }
+        .feature-card:nth-child(4) { animation-delay: 0.6s; }
 
         .feature-card:hover {
             transform: translateY(-10px);
@@ -565,7 +606,12 @@
     </div>
 
     <!-- Chatbot Widget -->
-    <div id="chat-widget">
+    <div id="chat-widget" class="minimized">
+        <div class="chat-bubble" onclick="document.getElementById('chat-widget').classList.remove('minimized'); document.getElementById('chat-widget').classList.add('expanded');">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+            </svg>
+        </div>
         <div class="chat-container">
             <div class="chat-header">💬 Ask us anything!</div>
             <div id="chat-log">
@@ -603,6 +649,12 @@
                     <div class="feature-icon">💼</div>
                     <h3>Professional & Easy</h3>
                     <p>We handle everything technical. You just provide the info, we do the rest.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⏰</div>
+                    <h3>Save 10+ Hours/Week</h3>
+                    <p>Stop answering the same questions repeatedly. Free your team to focus on what matters most.</p>
                 </div>
             </div>
 
@@ -654,6 +706,7 @@
         window.addEventListener('scroll', () => {
             const businessSection = document.querySelector('.business-section');
             const rect = businessSection.getBoundingClientRect();
+            const chatWidget = document.getElementById('chat-widget');
             
             if (rect.top <= window.innerHeight / 2) {
                 chatWidget.classList.add('hidden');
@@ -742,7 +795,7 @@
                     showFormMessage('Something went wrong. Please try again or email us directly.', 'error');
                 }
             } catch (error) {
-                showFormMessage('Connection error. Please email us at mjm0208@auburn.edu', 'error');
+                showFormMessage('Connection error. Please email us at gavinscheu@gmail.com', 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Request a Quote';

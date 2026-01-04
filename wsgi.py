@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from contact_handler import send_contact_email
 import openai
 import os
 from dotenv import load_dotenv
@@ -60,6 +61,34 @@ def chat():
 
         return jsonify({"reply": chatbot_reply})
 
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/contact", methods=["POST"])
+def contact():
+    try:
+        data = request.json
+        business_name = data.get("business_name", "").strip()
+        email = data.get("email", "").strip()
+        phone = data.get("phone", "").strip()
+        message = data.get("message", "").strip()
+        
+        # Validate business name is provided
+        if not business_name:
+            return jsonify({"error": "Business name is required"}), 400
+        
+        # Validate at least one contact method
+        if not email and not phone:
+            return jsonify({"error": "Email or phone required"}), 400
+        
+        # Send email
+        success = send_contact_email(business_name, email, phone, message)
+        
+        if success:
+            return jsonify({"message": "Contact form submitted successfully"}), 200
+        else:
+            return jsonify({"error": "Failed to send email"}), 500
+            
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

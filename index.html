@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario's Italian Restaurant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+        }
+
+        /* Restaurant Section */
+        .restaurant-section {
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            scroll-snap-align: start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .restaurant-header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .restaurant-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .restaurant-tagline {
+            font-size: 1.1rem;
+            color: #f0f0f0;
+            margin-top: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .restaurant-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+        }
+
+        .info-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: #d4af37;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 10px;
+        }
+
+        .info-card p, .info-card ul {
+            color: #e0e0e0;
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .info-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-card ul li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-card ul li:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-price {
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: #d4af37;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        .scroll-indicator svg {
+            width: 30px;
+            height: 30px;
+        }
+
+        /* Chatbot Widget */
+        #chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            z-index: 9999;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        #chat-widget.hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+
+        .chat-container {
+            background: rgba(26, 26, 26, 0.95);
+            border: 1px solid #d4af37;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+            color: #1a1a1a;
+            font-weight: bold;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        #chat-log {
+            height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #1a1a1a;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        #chat-log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat-log::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        #chat-log::-webkit-scrollbar-thumb {
+            background: #d4af37;
+            border-radius: 4px;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background: rgba(212, 175, 55, 0.2);
+            border-left: 3px solid #d4af37;
+        }
+
+        .bot-message {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #666;
+        }
+
+        .message strong {
+            color: #d4af37;
+        }
+
+        .rate-limit-warning {
+            background: rgba(255, 100, 100, 0.2);
+            border-left: 3px solid #ff6464;
+            color: #ff6464;
+        }
+
+        #chat-form {
+            display: flex;
+            border-top: 1px solid #d4af37;
+        }
+
+        #chat-input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: #2d2d2d;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        #chat-input::placeholder {
+            color: #888;
+        }
+
+        #chat-form button {
+            padding: 12px 20px;
+            background: #d4af37;
+            color: #1a1a1a;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+
+        #chat-form button:hover {
+            background: #b8941f;
+        }
+
+        /* Business Section */
+        .business-section {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .business-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(66, 153, 225, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(49, 130, 206, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .business-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .biz-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .biz-headline {
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 30px;
+            font-weight: 300;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(66, 153, 225, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease both;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 0.3s; }
+        .feature-card:nth-child(2) { animation-delay: 0.4s; }
+        .feature-card:nth-child(3) { animation-delay: 0.5s; }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: #4299e1;
+            box-shadow: 0 10px 30px rgba(66, 153, 225, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            color: #4299e1;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .feature-card p {
+            color: #cbd5e0;
+            line-height: 1.6;
+        }
+
+        .contact-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(66, 153, 225, 0.3);
+            border-radius: 20px;
+            padding: 50px;
+            margin-top: 60px;
+            animation: fadeInUp 0.8s ease 0.6s both;
+        }
+
+        .contact-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            color: #4299e1;
+            margin-bottom: 15px;
+        }
+
+        .contact-section p {
+            color: #cbd5e0;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .contact-form {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .form-group label {
+            color: #4299e1;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(66, 153, 225, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'Lato', sans-serif;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(66, 153, 225, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-message {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+        }
+
+        .form-message.success {
+            background: rgba(72, 187, 120, 0.2);
+            border: 1px solid #48bb78;
+            color: #48bb78;
+        }
+
+        .form-message.error {
+            background: rgba(245, 101, 101, 0.2);
+            border: 1px solid #f56565;
+            color: #f56565;
+        }
+
+        @media (max-width: 768px) {
+            .restaurant-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .restaurant-logo {
+                font-size: 2.5rem;
+            }
+            
+            .biz-logo {
+                font-size: 2.5rem;
+            }
+            
+            .biz-headline {
+                font-size: 1.5rem;
+            }
+            
+            #chat-widget {
+                width: 90%;
+                right: 5%;
+            }
+            
+            .contact-section {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Restaurant Demo Section -->
+    <div class="restaurant-section" id="restaurant">
+        <div class="restaurant-header">
+            <h1 class="restaurant-logo">Mario's</h1>
+            <p class="restaurant-tagline">Authentic Italian Cuisine</p>
+        </div>
+
+        <div class="restaurant-content">
+            <div class="info-card">
+                <h2>📍 Location & Hours</h2>
+                <p><strong>Address:</strong><br>
+                123 Main Street<br>
+                Auburn, AL 36830</p>
+                <p style="margin-top: 15px;"><strong>Hours:</strong></p>
+                <ul>
+                    <li>Mon-Thu: 11:00 AM - 10:00 PM</li>
+                    <li>Fri-Sat: 11:00 AM - 11:00 PM</li>
+                    <li>Sunday: 12:00 PM - 9:00 PM</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <h2>🍝 Featured Dishes</h2>
+                <ul>
+                    <li class="menu-item">
+                        <span>Spaghetti Carbonara</span>
+                        <span class="menu-price">$18</span>
+                    </li>
+                    <li class="menu-item">
+                        <span>Margherita Pizza</span>
+                        <span class="menu-price">$16</span>
+                    </li>
+                    <li class="menu-item">
+                        <span>Fettuccine Alfredo</span>
+                        <span class="menu-price">$19</span>
+                    </li>
+                    <li class="menu-item">
+                        <span>Lasagna Bolognese</span>
+                        <span class="menu-price">$20</span>
+                    </li>
+                    <li class="menu-item">
+                        <span>Chicken Marsala</span>
+                        <span class="menu-price">$22</span>
+                    </li>
+                    <li class="menu-item">
+                        <span>Tiramisu</span>
+                        <span class="menu-price">$8</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <h2>📞 Contact Us</h2>
+                <p><strong>Phone:</strong> (334) 555-MARIO</p>
+                <p><strong>Email:</strong> info@mariosauburn.com</p>
+                <p style="margin-top: 15px;">We accept reservations for parties of 6 or more. Walk-ins welcome!</p>
+            </div>
+
+            <div class="info-card">
+                <h2>🎉 Special Events</h2>
+                <p><strong>Happy Hour:</strong><br>
+                Mon-Fri, 3:00-6:00 PM<br>
+                Half-price appetizers & drinks</p>
+                <p style="margin-top: 15px;"><strong>Wine Wednesdays:</strong><br>
+                50% off all wine bottles</p>
+                <p style="margin-top: 15px;"><strong>Sunday Brunch:</strong><br>
+                12:00-3:00 PM with live music</p>
+            </div>
+        </div>
+
+        <div class="scroll-indicator">
+            <p style="margin-bottom: 10px; font-size: 0.9rem;">Scroll to learn more</p>
+            <svg fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Chatbot Widget -->
+    <div id="chat-widget">
+        <div class="chat-container">
+            <div class="chat-header">💬 Ask us anything!</div>
+            <div id="chat-log">
+                <div class="message bot-message">
+                    <strong>Mario's Bot:</strong> Welcome to Mario's! I can help answer questions about our menu, hours, location, and more. What would you like to know?
+                </div>
+            </div>
+            <form id="chat-form">
+                <input id="chat-input" type="text" placeholder="Type your question..." autocomplete="off">
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Business/Get Started Section -->
+    <div class="business-section">
+        <div class="business-content">
+            <h1 class="biz-logo">BizChatAssist</h1>
+            <h2 class="biz-headline">Want a 24/7 AI assistant like this for YOUR business?</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Instant Answers</h3>
+                    <p>Your customers get immediate responses to their questions, any time of day or night.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Custom Trained</h3>
+                    <p>Each chatbot is trained specifically on your business information, FAQs, and services.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💼</div>
+                    <h3>Professional & Easy</h3>
+                    <p>We handle everything technical. You just provide the info, we do the rest.</p>
+                </div>
+            </div>
+
+            <div class="contact-section">
+                <h2>Get Started Today</h2>
+                <p>Contact us for a custom quote for your business</p>
+                
+                <form class="contact-form" id="contact-form">
+                    <div class="form-group">
+                        <label for="business-name">Business Name *</label>
+                        <input type="text" id="business-name" name="business_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="Optional">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="tel" id="phone" name="phone" placeholder="Optional">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Tell us about your business</label>
+                        <textarea id="message" name="message" placeholder="What does your business do? How can we help?"></textarea>
+                    </div>
+                    
+                    <div id="form-feedback"></div>
+                    
+                    <button type="submit" class="submit-btn">Request a Quote</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chatbot functionality with rate limiting
+        const chatLog = document.getElementById('chat-log');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatWidget = document.getElementById('chat-widget');
+
+        // Rate limiting: 5 messages per visitor
+        const MAX_MESSAGES = 5;
+        let messageCount = parseInt(localStorage.getItem('chatMessageCount') || '0');
+
+        // Hide chatbot when scrolling to business section
+        window.addEventListener('scroll', () => {
+            const businessSection = document.querySelector('.business-section');
+            const rect = businessSection.getBoundingClientRect();
+            
+            if (rect.top <= window.innerHeight / 2) {
+                chatWidget.classList.add('hidden');
+            } else {
+                chatWidget.classList.remove('hidden');
+            }
+        });
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            // Check rate limit
+            if (messageCount >= MAX_MESSAGES) {
+                addMessage('System', 'You\'ve reached the demo limit of 5 messages. Contact us to get your own unlimited chatbot!', 'rate-limit-warning');
+                chatInput.value = '';
+                return;
+            }
+
+            addMessage('You', message, 'user-message');
+            chatInput.value = '';
+            messageCount++;
+            localStorage.setItem('chatMessageCount', messageCount.toString());
+
+            try {
+                const res = await fetch("https://chatbot-business-1.onrender.com/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await res.json();
+                addMessage('Mario\'s Bot', data.reply || data.error || 'Sorry, I couldn\'t process that.', 'bot-message');
+                
+                // Show warning at 4 messages
+                if (messageCount === 4) {
+                    setTimeout(() => {
+                        addMessage('System', 'Note: This is a demo. You have 1 message remaining.', 'rate-limit-warning');
+                    }, 1000);
+                }
+            } catch (error) {
+                addMessage('System', 'Connection error. Please try again.', 'rate-limit-warning');
+            }
+        });
+
+        function addMessage(sender, text, className) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+            chatLog.appendChild(messageDiv);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // Contact form submission
+        const contactForm = document.getElementById('contact-form');
+        const formFeedback = document.getElementById('form-feedback');
+
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(contactForm);
+            const data = Object.fromEntries(formData);
+            
+            // Validate at least one contact method
+            if (!data.email && !data.phone) {
+                showFormMessage('Please provide either an email or phone number.', 'error');
+                return;
+            }
+            
+            const submitBtn = contactForm.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            
+            try {
+                const response = await fetch('/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    showFormMessage('Thank you! We\'ll be in touch soon.', 'success');
+                    contactForm.reset();
+                } else {
+                    showFormMessage('Something went wrong. Please try again or email us directly.', 'error');
+                }
+            } catch (error) {
+                showFormMessage('Connection error. Please email us at gavinscheu@gmail.com', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Request a Quote';
+            }
+        });
+
+        function showFormMessage(message, type) {
+            formFeedback.innerHTML = `<div class="form-message ${type}">${message}</div>`;
+            setTimeout(() => {
+                formFeedback.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

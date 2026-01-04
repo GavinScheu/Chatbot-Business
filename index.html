@@ -532,6 +532,37 @@
             cursor: not-allowed;
         }
 
+        .tos-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            text-align: left;
+        }
+
+        .tos-checkbox input[type="checkbox"] {
+            margin-top: 3px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .tos-checkbox label {
+            cursor: pointer;
+        }
+
+        .tos-checkbox a {
+            color: #4299e1;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .tos-checkbox a:hover {
+            text-decoration: underline;
+        }
+
         .form-message {
             padding: 15px;
             border-radius: 8px;
@@ -724,6 +755,13 @@
                     </div>
                     
                     <div id="form-feedback"></div>
+                    
+                    <div class="tos-checkbox">
+                        <input type="checkbox" id="tos-agreement" name="tos_agreement" required>
+                        <label for="tos-agreement">
+                            I agree to the <a href="BizChatAssist_Terms_of_Service.pdf" target="_blank">Terms of Service</a>
+                        </label>
+                    </div>
                     
                     <button type="submit" class="submit-btn">Request a Quote</button>
                 </form>
